@@ -5,6 +5,7 @@ import { decodeMorse } from "../utils/morseDecoder";
 
 const AudioRecorder = () => {
   const [transcript, setTranscript] = useState<string>("");
+  const [currentMorse, setCurrentMorse] = useState<string>("");
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
 
@@ -27,7 +28,7 @@ const AudioRecorder = () => {
           const processAudio = () => {
             analyserRef.current?.getByteTimeDomainData(dataArray);
             const decodedMessage = decodeMorse(dataArray);
-            setTranscript(decodedMessage);
+            setCurrentMorse((prevMorse) => prevMorse + decodedMessage);
             requestAnimationFrame(processAudio);
           };
 
@@ -45,10 +46,19 @@ const AudioRecorder = () => {
     };
   }, []);
 
+  // Update transcript when currentMorse changes
+  useEffect(() => {
+    setTranscript((prevTranscript) => prevTranscript + currentMorse);
+  }, [currentMorse]);
+
   return (
-    <div>
+    <div className="w-screen overflow-clip flex flex-col h-screen px-6">
       <h1>Real-time Morse Code Translator</h1>
-      <p>{transcript}</p>
+      <textarea
+        title="morse"
+        value={transcript}
+        className=" w-full grow  whitespace-pre-wrap bg-slate-200 rounded-md"
+      />
     </div>
   );
 };
